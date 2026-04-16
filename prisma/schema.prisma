@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // Veri tabanı tipimiz
+  url      = env("DATABASE_URL")
+}
+
+// 1. Departmanlar ve Masraf Merkezleri
+model Department {
+  id           String        @id @default(cuid())
+  code         String        @unique // Örn: FB-1, RM-1
+  name         String        // Örn: Food&Wood Restaurant, Odalar
+  type         String        // Örn: Yiyecek, İçecek, OPEX
+  transactions Transaction[] 
+}
+
+// 2. Depolar (Lokasyonlar)
+model Location {
+  id           String        @id @default(cuid())
+  code         String        @unique // Örn: M-DEPO
+  name         String        // Örn: F&W Mutfak Depo
+  transactions Transaction[] 
+}
+
+// 3. Ürünler (Stok Kartları)
+model Product {
+  id             String        @id @default(cuid())
+  itemCode       String        @unique // Elektraweb Stok Kodu (Örn: 150.10.001)
+  name           String        // Örn: KUZU KOL
+  unit           String        // Örn: Kg, Litre, Adet
+  category       String        // Örn: Yiyecek, Alkol, Temizlik Kimyasalı
+  
+  transactions   Transaction[]
+  recipeItems    RecipeItem[]  
+  recipes        Recipe[]      
+}
+
+// 4. Reçeteler (BOM)
+model Recipe {
+  id             String       @id @default(cuid())
+  sellableItem   Product      @relation(fields: [productId], references: [id])
+  productId      String       @unique 
+  
+  ingredients    RecipeItem[] 
+}
+
+model RecipeItem {
+  id             String   @id @default(cuid())
+  recipe         Recipe   @relation(fields: [recipeId], references: [id])
+  recipeId       String
+  
+  ingredient     Product  @relation(fields: [ingredientId], references: [id])
+  ingredientId   String   
+  
+  quantity       Decimal  // Çarpan/Miktar
+}
+
+// 5. Stok Hareketleri (İşin Kalbi)
+model Transaction {
+  id             String     @id @default(cuid())
+  date           DateTime   
+  documentNo     String?    // İrsaliye, Fiş No
+  
+  product        Product    @relation(fields: [productId], references: [id])
+  productId      String
+  
+  location       Location   @relation(fields: [locationId], references: [id])
+  locationId     String
+  
+  department     Department? @relation(fields: [departmentId], references: [id])
+  departmentId   String?     
+  
+  type           String     // Alım, Tüketim, Zayi, İkram, Sayım Farkı, Üretim
+  quantity       Decimal    
+  unitPrice      Decimal    
+  totalPrice     Decimal    
+  
+  createdAt      DateTime   @default(now())
+}
