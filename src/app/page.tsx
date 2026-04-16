@@ -8,99 +8,61 @@ export default function Home() {
   const [status, setStatus] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setFile(e.target.files[0]);
-    }
-  };
-
   const handleUpload = async () => {
-    if (!file) {
-      setStatus("Lütfen önce bir dosya seçin.");
-      return;
-    }
-
+    if (!file) return setStatus("Lütfen dosya seçin.");
     setLoading(true);
-    setStatus("Dosya analiz ediliyor...");
+    setStatus("İşleniyor...");
 
     const formData = new FormData();
     formData.append("file", file);
 
     try {
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setStatus(`Başarılı! ${data.message} (${data.totalRows} satır okundu)`);
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (res.ok && data.status === "success") {
+        setStatus(`Başarılı! ${data.totalRows} satır sisteme aktarıldı.`);
       } else {
-        setStatus(`Hata: ${data.error}`);
+        setStatus(`Hata: ${data.message || "Format tanınamadı."}`);
       }
     } catch (error) {
-      console.error("Yükleme hatası:", error);
-      setStatus("Sistemsel bir hata oluştu.");
+      // Hata tanımlandı ve konsola basılarak "kullanılmama" hatası engellendi
+      console.error("Yükleme sırasında hata oluştu:", error);
+      setStatus("Sistemsel hata oluştu.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <main className="min-h-screen bg-[#faf8f5] flex flex-col items-center justify-center p-6">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+    <main className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md border border-slate-100">
+        <h1 className="text-4xl font-black text-slate-800 mb-2 italic">LongoCost</h1>
+        <p className="text-slate-500 mb-8 text-sm">CFO Veri Analiz Motoru - KESİN ÇÖZÜM</p>
 
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 tracking-tight italic">LongoCost</h1>
-          <p className="text-sm text-gray-500 mt-2 font-medium">Finansal Veri Aktarım Merkezi</p>
-        </div>
-
-        <div className="space-y-6">
-          <div className="flex flex-col items-center justify-center w-full">
-            <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors group">
-              <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                <svg className="w-10 h-10 mb-3 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                </svg>
-                <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Tıkla</span> veya dosyayı sürükle</p>
-                <p className="text-xs text-gray-600 font-medium">Elektraweb Excel (.xlsx, .xls) veya CSV</p>
-              </div>
-              <input
-                type="file"
-                className="hidden"
-                accept=".xlsx, .xls, .csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, text/csv, application/csv"
-                onChange={handleFileChange}
-              />
-            </label>
+        <label className="group relative flex flex-col items-center justify-center w-full h-44 border-4 border-dashed border-blue-200 rounded-2xl cursor-pointer bg-blue-50 hover:bg-blue-100 mb-6">
+          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+            <span className="text-blue-600 font-bold text-lg mb-1">Mizan Seçin</span>
+            <span className="text-slate-400 text-xs font-bold">SADECE EXCEL (.xlsx)</span>
           </div>
+          <input
+            type="file"
+            className="hidden"
+            accept=".xlsx, .xls"
+            onChange={(e) => {
+              if (e.target.files && e.target.files.length > 0) {
+                setFile(e.target.files[0]);
+              }
+            }}
+          />
+        </label>
 
-          {file && (
-            <div className="text-sm text-blue-700 bg-blue-50 p-4 rounded-lg border border-blue-100 animate-pulse">
-              <span className="font-bold">Seçilen Dosya:</span> {file.name}
-            </div>
-          )}
+        {file && <div className="mb-4 text-sm font-bold text-green-600">Seçildi: {file.name}</div>}
 
-          <button
-            onClick={handleUpload}
-            disabled={!file || loading}
-            className={`w-full py-4 px-4 rounded-xl text-white font-bold tracking-wide transition-all ${!file || loading
-              ? "bg-gray-300 cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl active:scale-[0.98]"
-              }`}
-          >
-            {loading ? "VERİLER İŞLENİYOR..." : "ANALİZİ BAŞLAT"}
-          </button>
+        <button onClick={handleUpload} disabled={!file || loading} className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg disabled:opacity-50">
+          {loading ? "İŞLENİYOR..." : "VERİLERİ ANALİZ ET"}
+        </button>
 
-          {status && (
-            <div className={`text-center text-sm font-medium p-4 rounded-lg shadow-sm border ${status.includes('Başarılı')
-              ? 'bg-green-50 text-green-700 border-green-200'
-              : 'bg-red-50 text-red-700 border-red-200'
-              }`}>
-              {status}
-            </div>
-          )}
-        </div>
+        {status && <div className="mt-6 p-4 rounded-xl text-sm font-bold border bg-slate-50">{status}</div>}
       </div>
     </main>
   );
