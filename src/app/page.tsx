@@ -35,7 +35,6 @@ export default function Home() {
       const data = await response.json();
 
       if (response.ok) {
-        // Backend'den gelen başarı mesajını ve satır sayısını göster
         setStatus(`Başarılı! ${data.message} (${data.totalRows} satır okundu)`);
       } else {
         setStatus(`Hata: ${data.error}`);
@@ -67,9 +66,6 @@ export default function Home() {
                 <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Tıkla</span> veya dosyayı sürükle</p>
                 <p className="text-xs text-gray-600 font-medium">Elektraweb Excel (.xlsx, .xls) veya CSV</p>
               </div>
-              {/* DİKKAT: 'accept' niteliği macOS için hem uzantıları hem de MIME tiplerini içerir.
-                Bu sayede dosya seçme penceresinde pasif (greyed out) kalma sorunu çözülür.
-              */}
               <input
                 type="file"
                 className="hidden"
@@ -89,8 +85,8 @@ export default function Home() {
             onClick={handleUpload}
             disabled={!file || loading}
             className={`w-full py-4 px-4 rounded-xl text-white font-bold tracking-wide transition-all ${!file || loading
-                ? "bg-gray-300 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl active:scale-[0.98]"
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl active:scale-[0.98]"
               }`}
           >
             {loading ? "VERİLER İŞLENİYOR..." : "ANALİZİ BAŞLAT"}
@@ -98,17 +94,13 @@ export default function Home() {
 
           {status && (
             <div className={`text-center text-sm font-medium p-4 rounded-lg shadow-sm border ${status.includes('Başarılı')
-                ? 'bg-green-50 text-green-700 border-green-200'
-                : 'bg-red-50 text-red-700 border-red-200'
+              ? 'bg-green-50 text-green-700 border-green-200'
+              : 'bg-red-50 text-red-700 border-red-200'
               }`}>
               {status}
             </div>
           )}
         </div>
-      </div>
-
-      <div className="mt-8 text-xs text-gray-400 font-mono">
-        v2.0.0 - Excel Engine Active
       </div>
     </main>
   );
